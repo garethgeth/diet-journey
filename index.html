@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Margareth — Diet Journey</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal: #1D9E75;
+  --teal-dark: #0F6E56;
+  --teal-light: #E1F5EE;
+  --teal-mid: #5DCAA5;
+  --purple: #534AB7;
+  --purple-light: #EEEDFE;
+  --amber: #BA7517;
+  --amber-light: #FAEEDA;
+  --coral: #D85A30;
+  --bg: #FAF9F6;
+  --surface: #FFFFFF;
+  --surface2: #F5F3EE;
+  --text: #1C1C1A;
+  --text2: #5A5956;
+  --text3: #9A9896;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.14);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 2px 16px rgba(0,0,0,0.07);
+  --shadow-md: 0 4px 28px rgba(0,0,0,0.10);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); overflow-x: hidden; }
+
+/* ── LAYOUT ─────────────────────────────── */
+.app { display: flex; flex-direction: column; min-height: 100vh; max-width: 430px; margin: 0 auto; background: var(--bg); position: relative; }
+.screen { display: none; flex-direction: column; flex: 1; padding-bottom: 80px; animation: fadeUp .3s ease; }
+.screen.active { display: flex; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── NAV ─────────────────────────────────── */
+.nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: var(--surface); border-top: 1px solid var(--border); display: flex; z-index: 100; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; cursor: pointer; border: none; background: none; }
+.nav-icon { width: 24px; height: 24px; }
+.nav-label { font-size: 10px; font-weight: 500; color: var(--text3); transition: color .2s; }
+.nav-item.active .nav-label { color: var(--teal); }
+.nav-item.active .nav-icon path, .nav-item.active .nav-icon circle, .nav-item.active .nav-icon rect { fill: var(--teal); }
+
+/* ── HEADER ──────────────────────────────── */
+.header { padding: 52px 20px 20px; }
+.header-eyebrow { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: var(--teal); margin-bottom: 4px; }
+.header-title { font-family: 'Playfair Display', serif; font-size: 26px; line-height: 1.2; color: var(--text); }
+.header-title em { color: var(--teal); font-style: italic; }
+.header-sub { font-size: 13px; color: var(--text2); margin-top: 6px; line-height: 1.5; }
+
+/* ── CARDS ───────────────────────────────── */
+.card { background: var(--surface); border-radius: var(--radius); padding: 16px; margin: 0 16px 12px; box-shadow: var(--shadow); }
+.card-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); margin-bottom: 10px; }
+.card-title { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--text); margin-bottom: 4px; }
+
+/* ── STATS STRIP ─────────────────────────── */
+.stats-strip { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin: 0 16px 12px; }
+.stat-box { background: var(--surface); border-radius: var(--radius-sm); padding: 12px 10px; text-align: center; box-shadow: var(--shadow); }
+.stat-val { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--teal); line-height: 1; }
+.stat-unit { font-size: 11px; color: var(--text3); }
+.stat-lbl { font-size: 10px; color: var(--text2); margin-top: 3px; }
+
+/* ── PHASE BAR ───────────────────────────── */
+.phase-card { background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%); border-radius: var(--radius); margin: 0 16px 12px; padding: 18px; color: white; }
+.phase-label { font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; opacity: .7; margin-bottom: 6px; }
+.phase-title { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 12px; }
+.phase-bar-bg { height: 6px; background: rgba(255,255,255,0.25); border-radius: 3px; margin-bottom: 8px; }
+.phase-bar-fill { height: 6px; background: white; border-radius: 3px; transition: width 1s ease; }
+.phase-meta { display: flex; justify-content: space-between; font-size: 11px; opacity: .8; }
+.phase-kcal { display: inline-block; background: rgba(255,255,255,.2); border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 500; margin-top: 8px; }
+
+/* ── BUTTONS ─────────────────────────────── */
+.btn { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 13px 20px; border-radius: 50px; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all .18s; }
+.btn-primary { background: var(--teal); color: white; }
+.btn-primary:hover { background: var(--teal-dark); }
+.btn-primary:active { transform: scale(.97); }
+.btn-outline { background: transparent; border: 1.5px solid var(--teal); color: var(--teal); }
+.btn-ghost { background: var(--surface2); color: var(--text); }
+.btn-full { width: 100%; }
+.btn-sm { padding: 8px 14px; font-size: 12px; }
+
+/* ── MEAL PLAN ───────────────────────────── */
+.day-tabs { display: flex; gap: 6px; padding: 0 16px; margin-bottom: 12px; overflow-x: auto; scrollbar-width: none; }
+.day-tabs::-webkit-scrollbar { display: none; }
+.day-tab { flex-shrink: 0; padding: 6px 14px; border-radius: 50px; border: 1.5px solid var(--border2); background: var(--surface); font-size: 12px; font-weight: 500; cursor: pointer; transition: all .15s; color: var(--text2); }
+.day-tab.active { background: var(--teal); border-color: var(--teal); color: white; }
+
+.meal-slot { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+.meal-slot:last-child { border-bottom: none; }
+.meal-time-badge { flex-shrink: 0; width: 52px; text-align: center; }
+.meal-time-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal-mid); margin: 3px auto 2px; }
+.meal-time-txt { font-size: 10px; color: var(--text3); }
+.meal-info { flex: 1; }
+.meal-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.meal-detail { font-size: 12px; color: var(--text2); line-height: 1.5; }
+.meal-kcal { font-size: 11px; color: var(--teal); font-weight: 500; margin-top: 3px; }
+
+/* ── AI LOADING ──────────────────────────── */
+.ai-loader { text-align: center; padding: 30px 20px; }
+.ai-spinner { width: 40px; height: 40px; border: 3px solid var(--teal-light); border-top-color: var(--teal); border-radius: 50%; margin: 0 auto 12px; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.ai-loader-text { font-size: 13px; color: var(--text2); }
+
+/* ── WEIGHT LOG ──────────────────────────── */
+.weight-input-row { display: flex; gap: 10px; margin-bottom: 14px; }
+.weight-input-row input { flex: 1; padding: 12px 16px; border-radius: 50px; border: 1.5px solid var(--border2); font-size: 16px; font-family: 'DM Sans',sans-serif; background: var(--surface); color: var(--text); outline: none; }
+.weight-input-row input:focus { border-color: var(--teal); }
+.weight-entry { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.weight-entry-date { font-size: 12px; color: var(--text2); }
+.weight-entry-val { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--text); }
+.weight-delta { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+.delta-down { background: var(--teal-light); color: var(--teal-dark); }
+.delta-up { background: #FCEBEB; color: #A32D2D; }
+.delta-same { background: var(--surface2); color: var(--text3); }
+
+/* ── CHART ───────────────────────────────── */
+.chart-wrap { position: relative; height: 140px; margin: 8px 0; }
+canvas.chart-canvas { width: 100%; height: 100%; }
+
+/* ── PHOTO JOURNAL ───────────────────────── */
+.photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.photo-card { background: var(--surface2); border-radius: var(--radius-sm); aspect-ratio: 3/4; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; border: 1.5px dashed var(--border2); }
+.photo-card img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.photo-card-label { font-size: 10px; color: var(--text3); margin-top: 8px; text-align: center; position: relative; z-index: 1; }
+.photo-add-icon { width: 32px; height: 32px; background: var(--teal-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.photo-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,.6)); padding: 20px 8px 8px; }
+.photo-overlay-date { font-size: 10px; color: rgba(255,255,255,.8); }
+.photo-overlay-weight { font-size: 14px; font-weight: 500; color: white; }
+
+/* ── TIPS ────────────────────────────────── */
+.tip-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--purple-light); color: var(--purple); font-size: 11px; font-weight: 500; padding: 5px 12px; border-radius: 20px; margin: 3px; }
+.insight-row { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.insight-row:last-child { border-bottom: none; }
+.insight-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.insight-body { flex: 1; }
+.insight-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+.insight-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+/* ── MODAL ───────────────────────────────── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; align-items: flex-end; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--surface); border-radius: 24px 24px 0 0; padding: 24px 20px calc(24px + env(safe-area-inset-bottom)); width: 100%; max-width: 430px; margin: 0 auto; animation: slideUp .25s ease; max-height: 85vh; overflow-y: auto; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 0 auto 20px; }
+.modal-title { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 16px; }
+.modal-close { position: absolute; top: 20px; right: 20px; width: 32px; height: 32px; border-radius: 50%; background: var(--surface2); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text2); }
+
+/* ── FORM ────────────────────────────────── */
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; color: var(--text3); margin-bottom: 6px; display: block; }
+.form-input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--border2); font-size: 15px; font-family: 'DM Sans',sans-serif; background: var(--surface); color: var(--text); outline: none; }
+.form-input:focus { border-color: var(--teal); }
+textarea.form-input { resize: none; min-height: 80px; line-height: 1.5; }
+
+/* ── ONBOARDING ──────────────────────────── */
+.onboard { display: flex; flex-direction: column; min-height: 100vh; background: var(--teal-dark); color: white; padding: 60px 28px 40px; justify-content: space-between; }
+.onboard-title { font-family: 'Playfair Display', serif; font-size: 36px; line-height: 1.15; margin-bottom: 12px; }
+.onboard-sub { font-size: 15px; opacity: .75; line-height: 1.6; }
+.onboard-pill { display: inline-flex; background: rgba(255,255,255,.15); border-radius: 20px; padding: 5px 14px; font-size: 12px; margin-bottom: 20px; }
+.onboard-form { background: rgba(255,255,255,.1); border-radius: 20px; padding: 20px; margin-top: 24px; }
+.onboard-input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,.3); background: rgba(255,255,255,.1); font-size: 15px; font-family: 'DM Sans',sans-serif; color: white; outline: none; margin-bottom: 10px; }
+.onboard-input::placeholder { color: rgba(255,255,255,.5); }
+.onboard-input:focus { border-color: rgba(255,255,255,.7); }
+.onboard-btn { width: 100%; padding: 14px; border-radius: 50px; border: none; background: white; color: var(--teal-dark); font-family: 'DM Sans',sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; margin-top: 6px; }
+
+/* ── MISC ────────────────────────────────── */
+.section-pad { padding: 0 16px; margin-bottom: 12px; }
+.divider { height: 1px; background: var(--border); margin: 4px 16px 12px; }
+.empty-state { text-align: center; padding: 30px 20px; color: var(--text3); font-size: 13px; }
+.tag { display: inline-block; font-size: 10px; font-weight: 500; padding: 3px 9px; border-radius: 20px; }
+.tag-teal { background: var(--teal-light); color: var(--teal-dark); }
+.tag-amber { background: var(--amber-light); color: var(--amber); }
+.tag-purple { background: var(--purple-light); color: var(--purple); }
+.progress-ring { transform: rotate(-90deg); }
+.week-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--surface2); border-radius: 20px; padding: 4px 10px; font-size: 11px; color: var(--text2); margin-bottom: 10px; }
+.ai-response { font-size: 13px; color: var(--text); line-height: 1.7; }
+.ai-response strong { color: var(--teal-dark); }
+.notification { background: var(--teal); color: white; border-radius: 12px; padding: 10px 14px; font-size: 12px; margin: 0 16px 10px; display: flex; align-items: center; gap: 8px; }
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboarding" class="onboard">
+  <div>
+    <div class="onboard-pill">Your diet companion</div>
+    <div class="onboard-title">Hello,<br><em style="font-style:italic;">let's begin<br>your journey.</em></div>
+    <div class="onboard-sub">Weekly meal plans, personalized to your weight and goals. Updated every Sunday.</div>
+    <div class="onboard-form">
+      <input class="onboard-input" id="ob-name" placeholder="Your name" value="Margareth">
+      <input class="onboard-input" id="ob-weight" placeholder="Current weight (kg)" type="number" value="77">
+      <input class="onboard-input" id="ob-height" placeholder="Height (cm)" type="number" value="156">
+      <input class="onboard-input" id="ob-age" placeholder="Age" type="number" value="32">
+      <input class="onboard-input" id="ob-target" placeholder="Target weight (kg)" type="number" value="53">
+      <button class="onboard-btn" onclick="startApp()">Start my journey →</button>
+    </div>
+  </div>
+  <div style="font-size:11px;opacity:.5;text-align:center;margin-top:20px;">Powered by AI · Your data stays on your device</div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" style="display:none;">
+<div class="app">
+
+  <!-- HOME SCREEN -->
+  <div class="screen active" id="screen-home">
+    <div class="header">
+      <div class="header-eyebrow" id="home-week-label">Minggu 1</div>
+      <div class="header-title">Halo, <em id="home-name">Margareth</em></div>
+      <div class="header-sub" id="home-date"></div>
+    </div>
+
+    <div class="stats-strip">
+      <div class="stat-box">
+        <div class="stat-val" id="stat-weight">77</div>
+        <div class="stat-unit">kg</div>
+        <div class="stat-lbl">Berat skrg</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="stat-bmi">31.7</div>
+        <div class="stat-unit">BMI</div>
+        <div class="stat-lbl">Obesitas I</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="stat-lost">4.4</div>
+        <div class="stat-unit">kg</div>
+        <div class="stat-lbl">Sudah turun</div>
+      </div>
+    </div>
+
+    <div class="phase-card" id="phase-card">
+      <div class="phase-label">Fase saat ini</div>
+      <div class="phase-title" id="phase-title">Fase 1 — Menuju 70 kg</div>
+      <div class="phase-bar-bg"><div class="phase-bar-fill" id="phase-bar" style="width:17%"></div></div>
+      <div class="phase-meta">
+        <span id="phase-start">77 kg</span>
+        <span id="phase-progress-txt">17% selesai</span>
+        <span id="phase-end">70 kg</span>
+      </div>
+      <div class="phase-kcal" id="phase-kcal">1,485 kcal / hari</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Aksi minggu ini</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="btn btn-primary btn-full" onclick="showScreen('meal');generateMealPlan()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="white"/></svg>
+          Generate Meal Plan Minggu Ini
+        </button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button class="btn btn-ghost" onclick="openWeightModal()">Log Berat Badan</button>
+          <button class="btn btn-ghost" onclick="showScreen('photo')">Tambah Foto</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Insights minggu ini</div>
+      <div class="insight-row">
+        <div class="insight-icon" style="background:#E1F5EE;">☕</div>
+        <div class="insight-body">
+          <div class="insight-title">Kopi upgrade</div>
+          <div class="insight-desc">Ganti creamer ke susu skim — hemat ~100 kcal/hari, ~700 kcal/minggu.</div>
+        </div>
+      </div>
+      <div class="insight-row">
+        <div class="insight-icon" style="background:#EEEDFE;">💧</div>
+        <div class="insight-body">
+          <div class="insight-title">Hidrasi</div>
+          <div class="insight-desc">Target 8 gelas/hari. Minum 1 gelas sebelum setiap makan utama.</div>
+        </div>
+      </div>
+      <div class="insight-row">
+        <div class="insight-icon" style="background:#FAEEDA;">🧘</div>
+        <div class="insight-body">
+          <div class="insight-title">Olahraga</div>
+          <div class="insight-desc">3x minggu ini. Jalan cepat 30 menit atau yoga sudah cukup di fase ini.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEAL PLAN SCREEN -->
+  <div class="screen" id="screen-meal">
+    <div class="header">
+      <div class="header-eyebrow" id="meal-week-label">Minggu 1</div>
+      <div class="header-title">Meal Plan<br><em>Mingguan</em></div>
+      <div class="header-sub" id="meal-kcal-note">Target: 1,485 kcal/hari · 5 waktu makan</div>
+    </div>
+
+    <div class="day-tabs" id="day-tabs"></div>
+
+    <div class="card" id="meal-content">
+      <div class="ai-loader" id="meal-loader" style="display:none;">
+        <div class="ai-spinner"></div>
+        <div class="ai-loader-text" id="loader-msg">Menyusun meal plan minggu ini...</div>
+      </div>
+      <div id="meal-day-content">
+        <div class="empty-state">Tekan "Generate Meal Plan" di halaman utama untuk membuat plan minggu ini.</div>
+      </div>
+    </div>
+
+    <div class="section-pad">
+      <button class="btn btn-outline btn-full" onclick="generateMealPlan()">
+        ↻ Generate ulang meal plan
+      </button>
+    </div>
+  </div>
+
+  <!-- WEIGHT SCREEN -->
+  <div class="screen" id="screen-weight">
+    <div class="header">
+      <div class="header-eyebrow">Progress</div>
+      <div class="header-title">Grafik<br><em>Berat Badan</em></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Log berat badan baru</div>
+      <div class="weight-input-row">
+        <input type="number" id="weight-input" placeholder="kg, contoh: 76.5" step="0.1">
+        <button class="btn btn-primary" onclick="logWeight()">Catat</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);">Timbang diri 2 minggu sekali, idealnya pagi hari sebelum makan.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Grafik perjalanan</div>
+      <div class="chart-wrap">
+        <canvas id="weightChart" class="chart-canvas"></canvas>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:6px;">
+        <span>Awal: 81.4 kg</span>
+        <span>Target: 53 kg</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Riwayat</div>
+      <div id="weight-log-list">
+        <div class="empty-state">Belum ada catatan berat badan.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHOTO SCREEN -->
+  <div class="screen" id="screen-photo">
+    <div class="header">
+      <div class="header-eyebrow">Transformasi</div>
+      <div class="header-title">Jurnal<br><em>Foto Progress</em></div>
+      <div class="header-sub">Foto setiap minggu untuk lihat perubahanmu. Disimpan di perangkatmu saja.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Tambah foto minggu ini</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">Tampak depan</div>
+          <label class="photo-card" style="cursor:pointer;">
+            <input type="file" accept="image/*" capture="user" style="display:none;" onchange="handlePhoto(event,'front')">
+            <div class="photo-add-icon" id="front-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="photo-card-label">Tap untuk foto</div>
+            <img id="front-preview" style="display:none;">
+          </label>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">Tampak samping</div>
+          <label class="photo-card" style="cursor:pointer;">
+            <input type="file" accept="image/*" capture="user" style="display:none;" onchange="handlePhoto(event,'side')">
+            <div class="photo-add-icon" id="side-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="photo-card-label">Tap untuk foto</div>
+            <img id="side-preview" style="display:none;">
+          </label>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="savePhotos()">Simpan foto minggu ini</button>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Galeri progress</div>
+      <div id="photo-gallery">
+        <div class="empty-state">Belum ada foto tersimpan.<br>Mulai foto minggu ini!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIPS SCREEN -->
+  <div class="screen" id="screen-tips">
+    <div class="header">
+      <div class="header-eyebrow">Panduan & Tips</div>
+      <div class="header-title">AI Coach<br><em>&amp; Tips</em></div>
+    </div>
+
+    <!-- API KEY BANNER -->
+    <div id="apikey-banner" style="margin:0 16px 12px;border-radius:var(--radius);padding:14px 16px;cursor:pointer;box-shadow:var(--shadow);" onclick="openApiKeyModal()">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:22px;" id="apikey-icon">🔑</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;color:var(--text);" id="apikey-banner-title">Hubungkan AI Coach</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;" id="apikey-banner-sub">Tap untuk setup API key — gratis dari Anthropic</div>
+        </div>
+        <span style="font-size:16px;color:var(--text3);">›</span>
+      </div>
+    </div>
+
+    <!-- AI COACH CARD -->
+    <div class="card">
+      <div class="card-label">Ask AI Coach</div>
+      <div id="ai-coach-no-key" style="display:none;background:var(--surface2);border-radius:12px;padding:14px;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Mode Tips Statis Aktif</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.6;">Scroll ke bawah untuk 20+ tips dikurasi khusus untukmu. Atau setup API key untuk bisa tanya langsung ke AI.</div>
+        <button class="btn btn-outline btn-full" style="margin-top:10px;font-size:13px;" onclick="openApiKeyModal()">Setup API Key →</button>
+      </div>
+      <div id="ai-coach-active">
+        <textarea class="form-input" id="ai-question" placeholder="Tanya apa saja... 'Boleh makan mie ayam?' atau 'Kenapa aku lapar terus?'" rows="3"></textarea>
+        <button class="btn btn-primary btn-full" style="margin-top:8px;" onclick="askAI()">Tanya AI Coach →</button>
+        <div id="ai-answer" style="margin-top:12px;display:none;"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Fase kamu saat ini</div>
+      <div id="tips-phase-info"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Tips polip endometrium</div>
+      <div class="insight-row"><div class="insight-icon" style="background:#E1F5EE;">🥦</div><div class="insight-body"><div class="insight-title">Cruciferous setiap hari</div><div class="insight-desc">Brokoli, kubis, kembang kol, kangkung — bantu metabolisme estrogen berlebih yang memperburuk polip.</div></div></div>
+      <div class="insight-row"><div class="insight-icon" style="background:#FAEEDA;">🐟</div><div class="insight-body"><div class="insight-title">Omega-3 2–3x seminggu</div><div class="insight-desc">Kembung &amp; tongkol harga 1/5 salmon, manfaat omega-3 sama. Anti-inflamasi langsung.</div></div></div>
+      <div class="insight-row"><div class="insight-icon" style="background:#EEEDFE;">🌿</div><div class="insight-body"><div class="insight-title">Kunyit &amp; jahe harian</div><div class="insight-desc">Kurkumin dalam kunyit terbukti anti-inflamasi. Masukkan ke semua masakan setiap hari.</div></div></div>
+      <div class="insight-row"><div class="insight-icon" style="background:#FAEEDA;">🌰</div><div class="insight-body"><div class="insight-title">Chia &amp; flaxseed harian</div><div class="insight-desc">Phytoestrogen protektif. 1 sdt di oat pagi sudah cukup. Beli sekali tahan berbulan-bulan.</div></div></div>
+      <div class="insight-row"><div class="insight-icon" style="background:#FCEBEB;">🚫</div><div class="insight-body"><div class="insight-title">Hindari creamer &amp; gula tambahan</div><div class="insight-desc">Creamer = lemak trans pro-inflamasi. Musuh langsung untuk kondisi polipmu. Ganti susu skim.</div></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Tips makan harian</div>
+      <div class="insight-row"><div class="insight-icon" style="background:#E1F5EE;">⏰</div><div class="insight-body"><div class="insight-title">Jangan skip sarapan</div><div class="insight-desc">Makan teratur 5x/hari jauh lebih efektif dari 2x. Sarapan aktifkan metabolisme sejak pagi.</div></div></div>
+      <div class="insight-row"><div class="insight-icon" style="background:#EEEDFE;">💧</div><div class="insight-body"><div class="insight-title">Minum air sebelum makan</div><div class="insight-desc">1 gelas besar sebelum setiap makan utama — kurangi porsi makan secara alami.</div></div></div>
+      <div class="insight-row"><div class="insight-icon" style="background:#FAEEDA;">🥗</div><div class="insight-body"><div class="insight-title">Sayur dulu, nasi belakangan</div><div class="insight-desc">Makan sayur &amp; protein lebih dulu baru nasi — turunkan lonjakan gula darah signifikan.</div></div></div>
+      <div class="insight-row"><div class="insight-icon" style="background:#E1F5EE;">🌙</div><div class="insight-body"><div class="insight-title">Stop makan jam 20.00</div><div class="insight-desc">Tubuh tidak efisien bakar kalori saat tidur. Makan malam sebelum jam 8 malam idealnya.</div></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Kalau tergoda cheat</div>
+      <div class="insight-row"><div class="insight-icon" style="background:#E1F5EE;">🤔</div><div class="insight-body"><div class="insight-title">Tunggu 15 menit dulu</div><div class="insight-desc">Craving biasanya hilang sendiri dalam 15 menit. Minum air atau jalan sebentar.</div></div></div>
+      <div class="insight-row"><div class="insight-icon" style="background:#FAEEDA;">🍜</div><div class="insight-body"><div class="insight-title">Mie ayam / bakso boleh?</div><div class="insight-desc">Sesekali boleh: minta kuah terpisah, kurangi mi, tambah sayur, hindari gorengan. Porsi setengah.</div></div></div>
+      <div class="insight-row"><div class="insight-icon" style="background:#EEEDFE;">🎯</div><div class="insight-body"><div class="insight-title">80/20 rule</div><div class="insight-desc">80% strict, 20% fleksibel. Diet terlalu kaku justru lebih sering gagal total.</div></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Olahraga &amp; gaya hidup</div>
+      <div class="insight-row"><div class="insight-icon" style="background:#E1F5EE;">🚶</div><div class="insight-body"><div class="insight-title">Mulai dari jalan kaki</div><div class="insight-desc">30 menit jalan cepat 3x/minggu sudah cukup di Fase 1. Tidak perlu gym mahal.</div></div></div>
+      <div class="insight-row"><div class="insight-icon" style="background:#FAEEDA;">😴</div><div class="insight-body"><div class="insight-title">Tidur = diet juga</div><div class="insight-desc">Kurang tidur naikkan hormon lapar (ghrelin). Target 7–8 jam. Tidur cukup = kontrol makan lebih mudah.</div></div></div>
+      <div class="insight-row"><div class="insight-icon" style="background:#EEEDFE;">📊</div><div class="insight-body"><div class="insight-title">Timbang 2 minggu sekali</div><div class="insight-desc">Bukan setiap hari — berat naik-turun ±2 kg/hari karena air. Ukur tren, bukan angka harian.</div></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Roadmap kalori</div>
+      <div style="display:flex;flex-direction:column;gap:8px;" id="roadmap-display"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="nav">
+    <button class="nav-item active" onclick="showScreen('home')" id="nav-home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" fill="#9A9896"/></svg>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" onclick="showScreen('meal');generateMealPlan()" id="nav-meal">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="3" rx="1.5" fill="#9A9896"/><rect x="3" y="10.5" width="18" height="3" rx="1.5" fill="#9A9896"/><rect x="3" y="17" width="12" height="3" rx="1.5" fill="#9A9896"/></svg>
+      <span class="nav-label">Meal Plan</span>
+    </button>
+    <button class="nav-item" onclick="showScreen('weight')" id="nav-weight">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none"><path d="M3 20l4.5-9 4.5 5 4-7 5 11" stroke="#9A9896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="nav-label">Progress</span>
+    </button>
+    <button class="nav-item" onclick="showScreen('photo')" id="nav-photo">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="15" rx="2" fill="#9A9896"/><circle cx="12" cy="13.5" r="3.5" fill="#FAF9F6"/><path d="M8.5 6l1.5-3h4l1.5 3" stroke="#9A9896" stroke-width="1.5"/></svg>
+      <span class="nav-label">Foto</span>
+    </button>
+    <button class="nav-item" onclick="showScreen('tips')" id="nav-tips">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none"><path d="M12 2a7 7 0 017 7c0 2.5-1.3 4.7-3.3 6L15 17H9l-.7-2C6.3 13.7 5 11.5 5 9a7 7 0 017-7z" fill="#9A9896"/><path d="M9 21h6" stroke="#9A9896" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="nav-label">Tips</span>
+    </button>
+  </nav>
+</div>
+</div>
+
+<!-- WEIGHT MODAL -->
+<div class="modal-overlay" id="weight-modal" onclick="closeModal('weight-modal')">
+  <div class="modal" onclick="e=>e.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Log Berat Badan</div>
+    <div class="form-group">
+      <label class="form-label">Berat hari ini (kg)</label>
+      <input class="form-input" id="modal-weight-input" type="number" placeholder="contoh: 76.8" step="0.1">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Catatan (opsional)</label>
+      <textarea class="form-input" id="modal-weight-note" placeholder="Perasaan hari ini, atau ada yg perlu dicatat..." rows="3"></textarea>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="logWeightFromModal()">Simpan</button>
+    <button class="btn btn-ghost btn-full" style="margin-top:8px;" onclick="closeModal('weight-modal')">Batal</button>
+  </div>
+</div>
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay" id="apikey-modal" onclick="closeModal('apikey-modal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔑 API Key Anthropic</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6;">API key disimpan hanya di browser iPhone-mu — tidak dikirim ke mana pun selain langsung ke Anthropic untuk generate meal plan & jawab pertanyaanmu.</p>
+    <div style="background:var(--teal-light);border-radius:12px;padding:12px;margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:500;color:var(--teal-dark);margin-bottom:4px;">CARA DAPAT API KEY (GRATIS)</div>
+      <div style="font-size:12px;color:var(--teal-dark);line-height:1.7;">1. Buka <strong>console.anthropic.com</strong><br>2. Daftar / login<br>3. Klik <strong>API Keys → Create Key</strong><br>4. Copy & paste di sini</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Paste API Key kamu</label>
+      <input class="form-input" id="apikey-input" type="password" placeholder="sk-ant-api03-...">
+    </div>
+    <div id="apikey-status" style="font-size:12px;margin-bottom:12px;display:none;"></div>
+    <button class="btn btn-primary btn-full" onclick="saveApiKey()">Simpan & Test Koneksi</button>
+    <button class="btn btn-ghost btn-full" style="margin-top:8px;" onclick="closeModal('apikey-modal')">Nanti saja — pakai tips statis dulu</button>
+  </div>
+</div>
+
+<script>
+// ── STATE ────────────────────────────────────────────────────────
+let state = {
+  name: 'Margareth', weight: 77, height: 156, age: 32, targetWeight: 53,
+  startWeight: 81.4, weekNumber: 1,
+  weightLog: [{date:'2025-02-03', weight:81.4, note:'Mulai program'},{date:'2026-04-26',weight:77,note:'Update terbaru'}],
+  photos: [],
+  currentMealPlan: null,
+  currentDay: 0,
+};
+
+const PHASES = [
+  {label:'Fase 1', from:81.4, to:70,  kcal:1485, kcalStr:'1,485', desc:'Lanjut plan dr. Ingrid. Metabolisme masih responsif.',                  color:'#1D9E75'},
+  {label:'Fase 2', from:70,   to:63,  kcal:1325, kcalStr:'1,325', desc:'Turun 150 kcal. Nasi 80g, selingan sore lebih ringan.',                  color:'#534AB7'},
+  {label:'Fase 3', from:63,   to:58,  kcal:1200, kcalStr:'1,200', desc:'Plateau wajar. Nasi 70g. Olahraga lebih variatif. Konsultasi dr. Ingrid!',color:'#BA7517'},
+  {label:'Fase 4', from:58,   to:53,  kcal:1175, kcalStr:'1,175', desc:'Protein tinggi jaga otot. Nasi 60g. Mulai strength training.',           color:'#639922'},
+  {label:'Maintenance', from:53, to:45, kcal:1450, kcalStr:'1,400–1,500', desc:'Pertahankan. Diet sudah jadi gaya hidup.',                        color:'#1D9E75'},
+];
+
+const DAYS = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+
+function getCurrentPhase(w) {
+  if (w > 70)  return PHASES[0]; // Fase 1: 81.4–70 kg
+  if (w > 63)  return PHASES[1]; // Fase 2: 70–63 kg  ← 65 kg masuk sini
+  if (w > 58)  return PHASES[2]; // Fase 3: 63–58 kg
+  if (w > 53)  return PHASES[3]; // Fase 4: 58–53 kg
+  return PHASES[4];               // Maintenance: ≤53 kg
+}
+
+// ─────────────────────────────────────────────────────────────────
+// MEAL TEMPLATES — one key per calorie target, gramasi disesuaikan
+// Fase 1: 1485 kcal  → porsi nasi 100g, protein 80–120g
+// Fase 2: 1325 kcal  → porsi nasi 80g,  protein 70–100g, 1 selingan dikurangi
+// Fase 3: 1200 kcal  → porsi nasi 70g,  protein 65–90g,  selingan buah lebih kecil
+// Fase 4: 1175 kcal  → porsi nasi 60g,  protein tinggi 80–100g, tanpa selingan sore
+// Maintenance: 1450  → porsi nasi 100g, protein 80g, lebih variatif
+// ─────────────────────────────────────────────────────────────────
+const MEAL_TEMPLATES = {
+
+  // ── FASE 1 · 1,485 kcal ──────────────────────────────────────────
+  1485: [
+    {time:'08.00',slot:'Pagi',meals:[
+      {name:'Overnight oat jar',detail:'Oat 50g (5 sdm) · susu skim 200ml (1 gelas) · chia seeds 1 sdt · stroberi 80g',kcal:'~270 kcal'},
+      {name:'Roti gandum + alpukat + telur rebus',detail:'Roti gandum 70g (2 lbr) · alpukat 40g (¼ buah) · putih telur 65g (2 btr) · tomat 100g',kcal:'~260 kcal'},
+      {name:'Kentang panggang + omelet putih telur',detail:'Kentang 210g (1 bj sedang) · putih telur 65g (2 btr) · tomat 100g · merica',kcal:'~285 kcal'},
+      {name:'Cinnamon oat pancake',detail:'Oat 50g (5 sdm) · putih telur 2 btr · susu skim 100ml · kayu manis 1 sdt',kcal:'~270 kcal'},
+      {name:'Mango yogurt sandwich',detail:'Roti gandum 70g (2 lbr) · plain yogurt 80ml (5 sdm) · mangga 30g · chia 0.5 sdt',kcal:'~255 kcal'},
+      {name:'Nasi goreng putih telur sawi',detail:'Nasi 100g (½ centong) · putih telur 65g (2 btr) · sawi 50g · 1 sdt minyak',kcal:'~295 kcal'},
+      {name:'Almond banana sandwich',detail:'Roti gandum 70g (2 lbr) · almond 10g (10 biji) · pisang 30g · susu skim 200ml',kcal:'~355 kcal'},
+    ]},
+    {time:'10.00',slot:'Selingan',meals:[
+      {name:'Pepaya potong',detail:'200g (~4 potong sedang)',kcal:'~78 kcal'},
+      {name:'Apel merah',detail:'170g (1 buah sedang)',kcal:'~80 kcal'},
+      {name:'Pisang ambon',detail:'100g (1 buah sedang)',kcal:'~89 kcal'},
+      {name:'Mangga harum manis',detail:'180g (1 buah kecil)',kcal:'~108 kcal'},
+      {name:'Melon kuning',detail:'180g (3 potong sedang)',kcal:'~61 kcal'},
+      {name:'Pear',detail:'170g (1 buah sedang)',kcal:'~96 kcal'},
+      {name:'Semangka',detail:'200g (2 potong segitiga)',kcal:'~60 kcal'},
+    ]},
+    {time:'12.00',slot:'Siang',meals:[
+      {name:'Nasi putih + ikan kembung bakar kunyit',detail:'Nasi 100g (½ centong) · ikan kembung 120g (1 ekor sedang) · tumis bayam 100g',kcal:'~360 kcal'},
+      {name:'Nasi putih + pepes ayam kemangi',detail:'Nasi 100g (½ centong) · ayam tanpa kulit 100g (1 potong dada) · tumis terong 100g',kcal:'~361 kcal'},
+      {name:'Nasi putih + ikan tongkol balado hijau',detail:'Nasi 100g (½ centong) · ikan tongkol 100g · tauge tumis 100g (¾ mangkok)',kcal:'~340 kcal'},
+      {name:'Nasi putih + ayam suwir sambal dabu-dabu',detail:'Nasi 100g (½ centong) · ayam tanpa kulit 100g · capcay 100g',kcal:'~375 kcal'},
+      {name:'Nasi putih + udang lemon panggang',detail:'Nasi 100g (½ centong) · udang segar 87g (~8 ekor) · tumis wortel labu siam 100g',kcal:'~396 kcal'},
+      {name:'Nasi putih + sapi tumis paprika',detail:'Nasi 100g (½ centong) · daging sapi 87g (3 iris tipis) · sayur sop 100g',kcal:'~440 kcal'},
+      {name:'Nasi putih + soto ayam bening',detail:'Nasi 100g (½ centong) · ayam tanpa kulit 100g · kentang 70g (⅓ bj sedang)',kcal:'~352 kcal'},
+    ]},
+    {time:'15.00',slot:'Selingan',meals:[
+      {name:'Pepaya potong',detail:'200g (~4 potong sedang)',kcal:'~78 kcal'},
+      {name:'Apel hijau',detail:'170g (1 buah sedang)',kcal:'~87 kcal'},
+      {name:'Pisang ambon',detail:'100g (1 buah sedang)',kcal:'~89 kcal'},
+      {name:'Mangga',detail:'180g (1 buah kecil)',kcal:'~108 kcal'},
+      {name:'Melon',detail:'180g (3 potong sedang)',kcal:'~61 kcal'},
+      {name:'Pear',detail:'170g (1 buah sedang)',kcal:'~96 kcal'},
+      {name:'Apel merah',detail:'170g (1 buah sedang)',kcal:'~80 kcal'},
+    ]},
+    {time:'19.00',slot:'Malam',meals:[
+      {name:'Nasi putih + ayam panggang lemon rosemary',detail:'Nasi 100g (½ centong) · ayam tanpa kulit 80g (¾ potong dada) · cah brokoli wortel 100g',kcal:'~330 kcal'},
+      {name:'Nasi putih + ikan salmon panggang',detail:'Nasi 100g (½ centong) · salmon 80g (1 potong kecil) · tumis kangkung 100g',kcal:'~340 kcal'},
+      {name:'Nasi putih + ayam kukus jahe sereh',detail:'Nasi 100g (½ centong) · ayam tanpa kulit 80g · sup labu kuning 100g',kcal:'~315 kcal'},
+      {name:'Nasi putih + udang panggang bawang putih',detail:'Nasi 100g (½ centong) · udang segar 70g (~6 ekor) · tumis buncis 100g',kcal:'~350 kcal'},
+      {name:'Nasi putih + ikan patin kuah asam',detail:'Nasi 100g (½ centong) · ikan patin 80g (1 potong) · cah labu siam 100g',kcal:'~320 kcal'},
+      {name:'Nasi putih + ayam panggang oregano',detail:'Nasi 100g (½ centong) · ayam tanpa kulit 80g · sawi tumis 100g',kcal:'~325 kcal'},
+      {name:'Nasi putih + tempe kukus + tumis wortel',detail:'Nasi 100g (½ centong) · tempe 80g (4 iris) · wortel brokoli 100g',kcal:'~320 kcal'},
+    ]},
+  ],
+
+  // ── FASE 2 · 1,325 kcal ─────────────────────────────────────────
+  // Perubahan: nasi 80g (turun 20g = ~26 kcal), protein sedikit turun,
+  // selingan sore diganti buah lebih kecil atau sayuran
+  1325: [
+    {time:'08.00',slot:'Pagi',meals:[
+      {name:'Overnight oat jar — porsi Fase 2',detail:'Oat 40g (4 sdm) · susu skim 150ml (¾ gelas) · chia seeds 1 sdt · stroberi 60g',kcal:'~220 kcal'},
+      {name:'Roti gandum + telur rebus + tomat',detail:'Roti gandum 60g (1½ lbr) · putih telur 65g (2 btr) · tomat 100g · mentimun 50g',kcal:'~210 kcal'},
+      {name:'Kentang panggang + omelet putih telur',detail:'Kentang 150g (¾ bj sedang) · putih telur 65g (2 btr) · bayam 50g · tomat 50g',kcal:'~235 kcal'},
+      {name:'Cinnamon oat porridge',detail:'Oat 40g (4 sdm) · susu skim 150ml · kayu manis 1 sdt · pisang 50g (½ buah)',kcal:'~225 kcal'},
+      {name:'Yogurt bowl + buah',detail:'Plain yogurt 120ml (8 sdm) · mangga 50g · chia 1 sdt · almond 7 biji',kcal:'~200 kcal'},
+      {name:'Nasi goreng putih telur sayur',detail:'Nasi 80g (⅖ centong) · putih telur 65g (2 btr) · sawi 80g · wortel 30g · 1 sdt minyak',kcal:'~255 kcal'},
+      {name:'Roti gandum + alpukat + telur',detail:'Roti gandum 60g (1½ lbr) · alpukat 30g · putih telur 50g (1½ btr) · tomat 80g',kcal:'~225 kcal'},
+    ]},
+    {time:'10.00',slot:'Selingan',meals:[
+      {name:'Pepaya potong',detail:'150g (~3 potong sedang)',kcal:'~59 kcal'},
+      {name:'Apel merah',detail:'150g (1 buah kecil)',kcal:'~70 kcal'},
+      {name:'Melon kuning',detail:'150g (2 potong sedang)',kcal:'~51 kcal'},
+      {name:'Pear',detail:'140g (1 buah kecil)',kcal:'~79 kcal'},
+      {name:'Semangka',detail:'180g (1½ potong segitiga)',kcal:'~54 kcal'},
+      {name:'Timun + wortel stik',detail:'Timun 100g + wortel 80g (mentah, dipotong stik)',kcal:'~52 kcal'},
+      {name:'Jeruk manis',detail:'150g (2 buah kecil)',kcal:'~70 kcal'},
+    ]},
+    {time:'12.00',slot:'Siang',meals:[
+      {name:'Nasi putih + ikan kembung bakar kunyit',detail:'Nasi 80g (⅖ centong) · ikan kembung 100g (1 ekor kecil) · tumis bayam 100g · tomat',kcal:'~315 kcal'},
+      {name:'Nasi putih + ayam panggang kemangi',detail:'Nasi 80g (⅖ centong) · ayam tanpa kulit 90g · tumis brokoli wortel 100g',kcal:'~310 kcal'},
+      {name:'Nasi putih + ikan tongkol + tumis kangkung',detail:'Nasi 80g (⅖ centong) · ikan tongkol 90g · kangkung tumis 100g · tomat',kcal:'~295 kcal'},
+      {name:'Nasi putih + tahu bacem + sup sayur',detail:'Nasi 80g (⅖ centong) · tahu 100g (2 kotak kecil) · sup wortel brokoli 100g',kcal:'~300 kcal'},
+      {name:'Nasi putih + udang kukus + capcay',detail:'Nasi 80g (⅖ centong) · udang segar 75g (~7 ekor) · capcay tanpa santan 100g',kcal:'~320 kcal'},
+      {name:'Nasi putih + tempe kukus + sayur bening',detail:'Nasi 80g (⅖ centong) · tempe 80g (4 iris) · sayur bening labu kuning 100g',kcal:'~295 kcal'},
+      {name:'Nasi putih + pepes ikan nila + tumis sawi',detail:'Nasi 80g (⅖ centong) · ikan nila 90g · sawi putih tumis 100g',kcal:'~305 kcal'},
+    ]},
+    {time:'15.00',slot:'Selingan',meals:[
+      {name:'Timun + wortel stik',detail:'Timun 100g + wortel 80g (mentah, dipotong stik) — rendah kalori, mengenyangkan',kcal:'~52 kcal'},
+      {name:'Tomat ceri',detail:'150g (~10 buah tomat ceri)',kcal:'~27 kcal'},
+      {name:'Pepaya potong',detail:'120g (~2 potong kecil)',kcal:'~47 kcal'},
+      {name:'Apel merah ½ buah',detail:'85g (½ buah apel sedang)',kcal:'~40 kcal'},
+      {name:'Susu skim dingin',detail:'150ml (¾ gelas)',kcal:'~51 kcal'},
+      {name:'Melon',detail:'120g (2 potong kecil)',kcal:'~40 kcal'},
+      {name:'Edamame rebus tanpa garam',detail:'50g (½ genggam)',kcal:'~63 kcal'},
+    ]},
+    {time:'19.00',slot:'Malam',meals:[
+      {name:'Nasi putih + ayam kukus jahe + tumis brokoli',detail:'Nasi 80g (⅖ centong) · ayam tanpa kulit 70g · brokoli tumis 100g · tomat 50g',kcal:'~285 kcal'},
+      {name:'Nasi putih + ikan bawal bakar + tumis sawi',detail:'Nasi 80g (⅖ centong) · ikan bawal 80g (1 potong kecil) · sawi hijau 100g',kcal:'~280 kcal'},
+      {name:'Nasi putih + pepes ayam + cah labu siam',detail:'Nasi 80g (⅖ centong) · ayam tanpa kulit 70g · labu siam 100g',kcal:'~270 kcal'},
+      {name:'Nasi putih + ikan kembung bakar + tumis kangkung',detail:'Nasi 80g (⅖ centong) · ikan kembung 80g · kangkung 100g',kcal:'~275 kcal'},
+      {name:'Nasi putih + tahu panggang + sup oyong',detail:'Nasi 80g (⅖ centong) · tahu 100g · oyong sup 100g',kcal:'~265 kcal'},
+      {name:'Nasi putih + ayam panggang oregano + tumis terong',detail:'Nasi 80g (⅖ centong) · ayam tanpa kulit 70g · terong 100g',kcal:'~270 kcal'},
+      {name:'Nasi putih + tempe goreng minimal + tumis wortel',detail:'Nasi 80g (⅖ centong) · tempe 70g (3 iris) · wortel 100g · 0.5 sdt minyak',kcal:'~275 kcal'},
+    ]},
+  ],
+
+  // ── FASE 3 · 1,200 kcal ─────────────────────────────────────────
+  // Perubahan: nasi 70g, protein 65–90g, selingan buah lebih kecil lagi,
+  // malam lebih banyak sayur daripada karbohidrat
+  1200: [
+    {time:'08.00',slot:'Pagi',meals:[
+      {name:'Oat porridge mini + telur',detail:'Oat 35g (3½ sdm) · susu skim 120ml · putih telur 1 btr · chia 1 sdt · pisang 40g',kcal:'~210 kcal'},
+      {name:'Roti gandum + telur + sayur',detail:'Roti gandum 50g (1½ lbr tipis) · putih telur 50g (1½ btr) · tomat 80g · mentimun 60g',kcal:'~185 kcal'},
+      {name:'Kentang rebus + putih telur rebus',detail:'Kentang 120g (½ bj sedang) · putih telur 65g (2 btr) · tomat 80g · selada',kcal:'~190 kcal'},
+      {name:'Yogurt + buah kecil + chia',detail:'Plain yogurt 100ml (6-7 sdm) · stroberi 50g · chia 1 sdt · almond 5 biji',kcal:'~160 kcal'},
+      {name:'Roti gandum + alpukat tipis + tomat',detail:'Roti gandum 50g (1½ lbr tipis) · alpukat 25g · tomat 100g · merica',kcal:'~175 kcal'},
+      {name:'Nasi tim + ayam suwir',detail:'Nasi 70g (⅓ centong) · ayam tanpa kulit suwir 65g · wortel 50g · jahe',kcal:'~200 kcal'},
+      {name:'Smoothie oat susu skim',detail:'Oat 30g (3 sdm) · susu skim 150ml · pisang 40g · flaxseed 1 sdt',kcal:'~195 kcal'},
+    ]},
+    {time:'10.00',slot:'Selingan',meals:[
+      {name:'Apel merah ½ buah',detail:'85g (½ buah apel sedang)',kcal:'~40 kcal'},
+      {name:'Timun stik',detail:'150g (1 timun sedang dipotong stik)',kcal:'~24 kcal'},
+      {name:'Pepaya potong',detail:'100g (~2 potong kecil)',kcal:'~39 kcal'},
+      {name:'Tomat ceri',detail:'120g (~8 buah tomat ceri)',kcal:'~22 kcal'},
+      {name:'Melon',detail:'120g (2 potong kecil)',kcal:'~40 kcal'},
+      {name:'Jeruk manis kecil',detail:'100g (1 jeruk kecil)',kcal:'~47 kcal'},
+      {name:'Susu skim',detail:'120ml (½ gelas)',kcal:'~41 kcal'},
+    ]},
+    {time:'12.00',slot:'Siang',meals:[
+      {name:'Nasi putih + ikan kembung bakar + tumis bayam',detail:'Nasi 70g (⅓ centong) · ikan kembung 90g · bayam tumis bawang putih 100g',kcal:'~285 kcal'},
+      {name:'Nasi putih + ayam kukus + cah brokoli',detail:'Nasi 70g (⅓ centong) · ayam tanpa kulit 80g · brokoli 120g · bawang putih',kcal:'~275 kcal'},
+      {name:'Nasi putih + tempe + sup sayur',detail:'Nasi 70g (⅓ centong) · tempe 80g (4 iris) · sup wortel buncis 120g',kcal:'~265 kcal'},
+      {name:'Nasi putih + ikan tongkol + tumis sawi',detail:'Nasi 70g (⅓ centong) · ikan tongkol 85g · sawi putih 100g',kcal:'~270 kcal'},
+      {name:'Nasi putih + udang kukus + capcay',detail:'Nasi 70g (⅓ centong) · udang segar 65g (~6 ekor) · capcay 120g',kcal:'~270 kcal'},
+      {name:'Nasi putih + tahu panggang + sayur bening',detail:'Nasi 70g (⅓ centong) · tahu 100g · labu kuning bening 120g',kcal:'~255 kcal'},
+      {name:'Nasi putih + pepes ikan nila + tumis kangkung',detail:'Nasi 70g (⅓ centong) · ikan nila 85g · kangkung 100g',kcal:'~268 kcal'},
+    ]},
+    {time:'15.00',slot:'Selingan',meals:[
+      {name:'Timun + tomat ceri',detail:'Timun 100g + tomat ceri 80g — nyemil tanpa rasa bersalah',kcal:'~30 kcal'},
+      {name:'Apel ½ buah',detail:'85g (½ buah apel)',kcal:'~40 kcal'},
+      {name:'Pepaya potong kecil',detail:'80g (1 potong kecil)',kcal:'~31 kcal'},
+      {name:'Susu skim dingin',detail:'100ml (½ gelas kecil)',kcal:'~34 kcal'},
+      {name:'Tomat ceri',detail:'100g (~6-7 buah)',kcal:'~18 kcal'},
+      {name:'Wortel baby rebus',detail:'80g (5-6 wortel baby)',kcal:'~33 kcal'},
+      {name:'Edamame rebus',detail:'40g (1 genggam kecil)',kcal:'~50 kcal'},
+    ]},
+    {time:'19.00',slot:'Malam',meals:[
+      {name:'Nasi putih (kecil) + ayam kukus + banyak sayur',detail:'Nasi 70g (⅓ centong) · ayam tanpa kulit 65g · tumis brokoli sawi 150g',kcal:'~260 kcal'},
+      {name:'Nasi putih (kecil) + ikan bakar + tumis 2 sayur',detail:'Nasi 70g (⅓ centong) · ikan kembung 70g · kangkung + wortel masing2 75g',kcal:'~255 kcal'},
+      {name:'Nasi putih (kecil) + sup ayam sayur',detail:'Nasi 70g (⅓ centong) · ayam tanpa kulit 65g · wortel buncis brokoli 150g',kcal:'~250 kcal'},
+      {name:'Nasi putih (kecil) + tempe + tumis sawi putih',detail:'Nasi 70g (⅓ centong) · tempe 70g · sawi putih 120g',kcal:'~248 kcal'},
+      {name:'Nasi putih (kecil) + ikan panggang + lalapan',detail:'Nasi 70g (⅓ centong) · ikan nila 75g · tomat timun selada 120g',kcal:'~250 kcal'},
+      {name:'Nasi putih (kecil) + tahu + capcay banyak',detail:'Nasi 70g (⅓ centong) · tahu 90g · capcay 150g · 0.5 sdt minyak',kcal:'~245 kcal'},
+      {name:'Nasi putih (kecil) + udang rebus + cah brokoli',detail:'Nasi 70g (⅓ centong) · udang 60g (~5 ekor) · brokoli 150g · bawang putih',kcal:'~248 kcal'},
+    ]},
+  ],
+
+  // ── FASE 4 · 1,175 kcal ─────────────────────────────────────────
+  // Perubahan: nasi 60g (sangat kecil), protein NAIK ke 80–100g untuk
+  // jaga massa otot, selingan sore DIHAPUS diganti sayur bebas
+  // Total: pagi ~200 + selingan pagi ~40 + siang ~280 + malam ~280 + malam protein snack ~100 = ~900?
+  // Adjusted: pagi ~220 + seling pagi ~50 + siang ~330 + seling sore sayur ~50 + malam ~300 ≈ 950 kcal base
+  // Tambah susu skim 200ml sore: +68 kcal → 1018 + overhead bumbu ~150 = ~1175
+  1175: [
+    {time:'08.00',slot:'Pagi',meals:[
+      {name:'Protein oat bowl',detail:'Oat 35g (3½ sdm) · susu skim 150ml · putih telur 2 btr · chia 1 sdt · pisang 30g',kcal:'~225 kcal'},
+      {name:'Roti gandum + telur + sayur segar',detail:'Roti gandum 50g (1½ lbr tipis) · putih telur 65g (2 btr) · tomat 80g · timun 60g',kcal:'~195 kcal'},
+      {name:'Kentang rebus kecil + putih telur + sayur',detail:'Kentang 100g · putih telur 65g (2 btr) · bayam rebus 80g · tomat',kcal:'~200 kcal'},
+      {name:'Yogurt tinggi protein + buah kecil',detail:'Plain yogurt 120ml (8 sdm) · stroberi 40g · flaxseed 1 sdt · almond 5 biji',kcal:'~170 kcal'},
+      {name:'Telur rebus + roti gandum kecil',detail:'Putih telur 3 btr (rebus) · roti gandum 40g (1 lbr) · tomat 100g · timun 50g',kcal:'~190 kcal'},
+      {name:'Nasi tim kecil + ayam suwir banyak',detail:'Nasi 60g (¼ centong penuh) · ayam tanpa kulit suwir 80g · wortel 60g · jahe',kcal:'~220 kcal'},
+      {name:'Smoothie protein',detail:'Susu skim 200ml · oat 25g · pisang 30g · chia 1 sdt · putih telur 1 btr (pasteurisasi)',kcal:'~210 kcal'},
+    ]},
+    {time:'10.00',slot:'Selingan',meals:[
+      {name:'Timun stik',detail:'150g (1 timun sedang) — nyemil segar, hampir nol kalori',kcal:'~24 kcal'},
+      {name:'Tomat ceri',detail:'100g (~6-7 buah)',kcal:'~18 kcal'},
+      {name:'Apel ¼ buah',detail:'50g (¼ apel sedang)',kcal:'~24 kcal'},
+      {name:'Pepaya 1 potong kecil',detail:'60g (1 potong kecil)',kcal:'~24 kcal'},
+      {name:'Wortel baby mentah',detail:'80g (5-6 wortel baby)',kcal:'~33 kcal'},
+      {name:'Susu skim',detail:'100ml (½ gelas kecil)',kcal:'~34 kcal'},
+      {name:'Edamame rebus',detail:'30g (½ genggam kecil)',kcal:'~38 kcal'},
+    ]},
+    {time:'12.00',slot:'Siang',meals:[
+      {name:'Nasi kecil + ayam panggang + banyak sayur',detail:'Nasi 60g (¼ centong) · ayam tanpa kulit 90g (¾ dada) · brokoli + sawi 150g · kunyit',kcal:'~295 kcal'},
+      {name:'Nasi kecil + ikan kembung bakar + sayur berlimpah',detail:'Nasi 60g (¼ centong) · ikan kembung 100g (1 ekor) · bayam + wortel 150g',kcal:'~285 kcal'},
+      {name:'Nasi kecil + tempe + protein + sup',detail:'Nasi 60g (¼ centong) · tempe 80g (4 iris) · putih telur 1 btr · sup sayur 150g',kcal:'~280 kcal'},
+      {name:'Nasi kecil + udang panggang + capcay',detail:'Nasi 60g (¼ centong) · udang segar 80g (~7 ekor) · capcay 150g · bawang putih',kcal:'~290 kcal'},
+      {name:'Nasi kecil + ikan tongkol + tumis 2 sayur',detail:'Nasi 60g (¼ centong) · ikan tongkol 90g · kangkung + wortel 150g',kcal:'~280 kcal'},
+      {name:'Nasi kecil + tahu + ayam suwir + sayur',detail:'Nasi 60g (¼ centong) · tahu 80g · ayam suwir 50g · sawi 100g',kcal:'~270 kcal'},
+      {name:'Nasi kecil + salmon panggang + salad sayur',detail:'Nasi 60g (¼ centong) · salmon 80g (1 potong kecil) · tomat timun selada 150g',kcal:'~295 kcal'},
+    ]},
+    {time:'15.00',slot:'Selingan',meals:[
+      {name:'Sayur bebas + susu skim',detail:'Timun + tomat 100g + susu skim 100ml · protein snack ringan',kcal:'~58 kcal'},
+      {name:'Timun + tomat ceri',detail:'Timun 100g + tomat ceri 60g — bebas dimakan banyak',kcal:'~24 kcal'},
+      {name:'Susu skim + almond 5 biji',detail:'Susu skim 120ml + almond panggang 5 biji (8g)',kcal:'~88 kcal'},
+      {name:'Wortel stik + yogurt dip',detail:'Wortel 80g + plain yogurt 2 sdm (30ml)',kcal:'~55 kcal'},
+      {name:'Tomat + timun + merica',detail:'Tomat 100g + timun 100g + sejumput merica + air lemon',kcal:'~35 kcal'},
+      {name:'Edamame rebus',detail:'30g (½ genggam kecil)',kcal:'~38 kcal'},
+      {name:'Putih telur rebus',detail:'2 butir putih telur (tanpa kuning) · protein murni',kcal:'~34 kcal'},
+    ]},
+    {time:'19.00',slot:'Malam',meals:[
+      {name:'Nasi kecil + ayam panggang tinggi protein',detail:'Nasi 60g (¼ centong) · ayam tanpa kulit 90g · tumis brokoli kangkung 150g · kunyit jahe',kcal:'~295 kcal'},
+      {name:'Nasi kecil + ikan bakar + sayur berlimpah',detail:'Nasi 60g (¼ centong) · ikan kembung/nila 85g · bayam + sawi 150g',kcal:'~280 kcal'},
+      {name:'Nasi kecil + sup ayam bening + lalapan',detail:'Nasi 60g (¼ centong) · ayam tanpa kulit 80g · wortel buncis 150g · tomat timun',kcal:'~275 kcal'},
+      {name:'Nasi kecil + tahu + putih telur + sayur',detail:'Nasi 60g (¼ centong) · tahu 80g · putih telur 1 btr · sawi brokoli 150g',kcal:'~265 kcal'},
+      {name:'Nasi kecil + udang rebus + cah brokoli bawang putih',detail:'Nasi 60g (¼ centong) · udang 75g (~6 ekor) · brokoli 150g · bawang putih kunyit',kcal:'~270 kcal'},
+      {name:'Nasi kecil + tempe panggang + lalapan komplit',detail:'Nasi 60g (¼ centong) · tempe 80g (4 iris tipis) · tomat timun selada 150g',kcal:'~258 kcal'},
+      {name:'Nasi kecil + pepes ikan + tumis 2 jenis sayur',detail:'Nasi 60g (¼ centong) · ikan nila 80g · kangkung + wortel 150g',kcal:'~268 kcal'},
+    ]},
+  ],
+
+  // ── MAINTENANCE · 1,450 kcal ─────────────────────────────────────
+  // Kembali ke nasi 100g, protein cukup, selingan normal, lebih variatif
+  1450: [
+    {time:'08.00',slot:'Pagi',meals:[
+      {name:'Overnight oat jar',detail:'Oat 45g (4½ sdm) · susu skim 200ml (1 gelas) · chia 1 sdt · buah segar 80g',kcal:'~260 kcal'},
+      {name:'Roti gandum + alpukat + telur',detail:'Roti gandum 70g (2 lbr) · alpukat 40g · putih telur 65g (2 btr) · tomat 80g',kcal:'~260 kcal'},
+      {name:'Nasi + telur + sayur (sarapan Indonesia)',detail:'Nasi 100g (½ centong) · putih telur 65g (2 btr) · tumis bayam/sawi 80g',kcal:'~275 kcal'},
+      {name:'Yogurt bowl lengkap',detail:'Plain yogurt 150ml · granola oat 30g · stroberi 60g · chia 1 sdt · almond 8 biji',kcal:'~265 kcal'},
+      {name:'Roti gandum + telur + buah',detail:'Roti gandum 70g (2 lbr) · putih telur 65g (2 btr) · apel 100g',kcal:'~255 kcal'},
+      {name:'Oat pancake + buah',detail:'Oat 50g · putih telur 2 btr · susu skim 80ml · kayu manis · mangga 80g',kcal:'~280 kcal'},
+      {name:'Mango banana smoothie bowl',detail:'Susu skim 200ml · pisang 60g · mangga 60g · oat 30g · flaxseed 1 sdt',kcal:'~265 kcal'},
+    ]},
+    {time:'10.00',slot:'Selingan',meals:[
+      {name:'Pepaya potong',detail:'180g (~3-4 potong)',kcal:'~70 kcal'},
+      {name:'Apel merah',detail:'150g (1 buah sedang)',kcal:'~70 kcal'},
+      {name:'Pisang ambon',detail:'100g (1 buah sedang)',kcal:'~89 kcal'},
+      {name:'Mangga',detail:'150g (1 buah kecil)',kcal:'~90 kcal'},
+      {name:'Melon',detail:'180g (3 potong)',kcal:'~61 kcal'},
+      {name:'Pear',detail:'150g (1 buah sedang)',kcal:'~85 kcal'},
+      {name:'Semangka',detail:'200g (2 potong)',kcal:'~60 kcal'},
+    ]},
+    {time:'12.00',slot:'Siang',meals:[
+      {name:'Nasi putih + ikan kembung bakar + sayur 2 jenis',detail:'Nasi 100g (½ centong) · ikan kembung 100g · bayam 80g + wortel 60g · kunyit',kcal:'~345 kcal'},
+      {name:'Nasi putih + ayam panggang + cah brokoli',detail:'Nasi 100g (½ centong) · ayam tanpa kulit 80g · brokoli 100g + wortel 50g',kcal:'~330 kcal'},
+      {name:'Nasi putih + tempe + tahu + sup sayur',detail:'Nasi 100g (½ centong) · tempe 60g · tahu 60g · sup wortel buncis 100g',kcal:'~320 kcal'},
+      {name:'Nasi putih + udang saus bawang putih',detail:'Nasi 100g (½ centong) · udang segar 80g (~7 ekor) · brokoli + wortel 100g',kcal:'~340 kcal'},
+      {name:'Nasi putih + ikan tongkol + tumis kangkung',detail:'Nasi 100g (½ centong) · ikan tongkol 90g · kangkung 100g · bawang putih',kcal:'~330 kcal'},
+      {name:'Nasi putih + sop daging sapi bening',detail:'Nasi 100g (½ centong) · daging sapi 70g (2 iris) · wortel kentang buncis 100g',kcal:'~360 kcal'},
+      {name:'Nasi putih + soto ayam bening',detail:'Nasi 100g (½ centong) · ayam tanpa kulit 80g · bihun 20g · tomat · tauge',kcal:'~345 kcal'},
+    ]},
+    {time:'15.00',slot:'Selingan',meals:[
+      {name:'Pepaya potong',detail:'150g (~3 potong)',kcal:'~59 kcal'},
+      {name:'Apel + almond',detail:'100g apel + 7 biji almond (10g)',kcal:'~107 kcal'},
+      {name:'Pisang ambon kecil',detail:'80g (1 buah kecil)',kcal:'~71 kcal'},
+      {name:'Yogurt plain',detail:'100ml (6-7 sdm)',kcal:'~58 kcal'},
+      {name:'Timun + tomat + susu skim',detail:'Sayur bebas + susu skim 100ml',kcal:'~55 kcal'},
+      {name:'Melon',detail:'150g (2-3 potong)',kcal:'~51 kcal'},
+      {name:'Pear kecil',detail:'120g (1 buah kecil)',kcal:'~68 kcal'},
+    ]},
+    {time:'19.00',slot:'Malam',meals:[
+      {name:'Nasi putih + ayam panggang + tumis 2 sayur',detail:'Nasi 100g (½ centong) · ayam tanpa kulit 80g · brokoli 80g + wortel 60g',kcal:'~330 kcal'},
+      {name:'Nasi putih + ikan salmon panggang + sawi',detail:'Nasi 100g (½ centong) · salmon 75g · sawi hijau 100g · bawang putih',kcal:'~335 kcal'},
+      {name:'Nasi putih + ayam kukus jahe + labu siam',detail:'Nasi 100g (½ centong) · ayam tanpa kulit 80g · labu siam 100g',kcal:'~315 kcal'},
+      {name:'Nasi putih + tempe + pepes ikan',detail:'Nasi 100g (½ centong) · tempe 60g · ikan kembung 70g · sayur bening 80g',kcal:'~325 kcal'},
+      {name:'Nasi putih + udang kukus + tumis brokoli',detail:'Nasi 100g (½ centong) · udang 70g (~6 ekor) · brokoli 100g',kcal:'~305 kcal'},
+      {name:'Nasi putih + tahu + ayam suwir + sayur',detail:'Nasi 100g (½ centong) · tahu 80g · ayam suwir 50g · kangkung 100g',kcal:'~320 kcal'},
+      {name:'Nasi putih + ikan bakar + lalapan + sambal',detail:'Nasi 100g (½ centong) · ikan nila 85g · tomat timun selada 100g · sambal tomat',kcal:'~318 kcal'},
+    ]},
+  ],
+};
+
+function getCurrentPhase(w) {
+  for (let p of PHASES) { if (w <= p.from && w > p.to) return p; }
+  if (w <= 50) return PHASES[4];
+  return PHASES[0];
+}
+
+// ── INIT ─────────────────────────────────────────────────────────
+function startApp() {
+  state.name = document.getElementById('ob-name').value || 'Margareth';
+  state.weight = parseFloat(document.getElementById('ob-weight').value) || 77;
+  state.height = parseFloat(document.getElementById('ob-height').value) || 156;
+  state.age = parseInt(document.getElementById('ob-age').value) || 32;
+  state.targetWeight = parseFloat(document.getElementById('ob-target').value) || 53;
+  saveState(); initApp();
+}
+
+function initApp() {
+  document.getElementById('onboarding').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  updateHomeScreen(); buildDayTabs(); buildRoadmap(); drawChart(); updateApiKeyUI();
+  const d=new Date(); document.getElementById('home-date').textContent=d.toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+
+function updateHomeScreen() {
+  const p = getCurrentPhase(state.weight);
+  const bmi = (state.weight/(state.height/100)**2).toFixed(1);
+  const lost = Math.max(0, state.startWeight - state.weight).toFixed(1);
+  document.getElementById('home-name').textContent = state.name.split(' ')[0];
+  document.getElementById('stat-weight').textContent = state.weight;
+  document.getElementById('stat-bmi').textContent = bmi;
+  document.getElementById('stat-lost').textContent = lost;
+  const bmiNum=parseFloat(bmi);
+  const bmiLabel=bmiNum<25?'Normal':bmiNum<27.5?'Overweight':bmiNum<30?'Obesitas I':bmiNum<35?'Obesitas II':'Obesitas III';
+  document.querySelector('#screen-home .stat-box:nth-child(2) .stat-lbl').textContent=bmiLabel;
+  document.getElementById('phase-title').textContent = p.label + ' — Menuju ' + p.to + ' kg';
+  const pct = Math.round((state.startWeight - state.weight)/(state.startWeight - state.targetWeight)*100);
+  document.getElementById('phase-bar').style.width = Math.min(pct,100)+'%';
+  document.getElementById('phase-progress-txt').textContent = pct + '% selesai';
+  document.getElementById('phase-start').textContent = p.from + ' kg';
+  document.getElementById('phase-end').textContent = p.to + ' kg';
+  document.getElementById('phase-kcal').textContent = p.kcalStr + ' kcal / hari';
+  document.getElementById('meal-kcal-note').textContent = 'Target: ' + p.kcalStr + ' kcal/hari · 5 waktu makan';
+  const wk = 'Minggu ' + state.weekNumber;
+  document.getElementById('home-week-label').textContent = wk;
+  document.getElementById('meal-week-label').textContent = wk;
+  buildTipsPhase();
+}
+
+// ── SCREENS ───────────────────────────────────────────────────────
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nav-'+name)?.classList.add('active');
+  if(name==='weight') { drawChart(); renderWeightLog(); }
+  if(name==='photo') renderPhotoGallery();
+}
+
+// ── MEAL PLAN ─────────────────────────────────────────────────────
+function buildDayTabs() {
+  const tabs = document.getElementById('day-tabs');
+  tabs.innerHTML = '';
+  DAYS.forEach((d,i)=>{
+    const btn = document.createElement('button');
+    btn.className='day-tab'+(i===0?' active':'');
+    btn.textContent=d;
+    btn.onclick=()=>{ document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('active')); btn.classList.add('active'); state.currentDay=i; renderDayMeals(); };
+    tabs.appendChild(btn);
+  });
+}
+
+async function generateMealPlan() {
+  showScreen('meal');
+  if(state.currentMealPlan) { renderDayMeals(); return; }
+  const loader=document.getElementById('meal-loader');
+  const content=document.getElementById('meal-day-content');
+  loader.style.display='block'; content.style.display='none';
+  const msgs=['Menganalisis berat badanmu...','Menyusun menu bergizi...','Menyesuaikan dengan kalori...','Menambahkan variasi rempah...'];
+  let mi=0;
+  const iv=setInterval(()=>{ document.getElementById('loader-msg').textContent=msgs[mi%msgs.length]; mi++; },900);
+  const phase=getCurrentPhase(state.weight);
+  const prompt=`Kamu adalah ahli gizi. Buat meal plan 7 hari untuk ${state.name}, perempuan ${state.age} tahun, berat ${state.weight} kg, tinggi ${state.height} cm. Target kalori: ${phase.kcal} kcal/hari dalam 5 waktu makan (pagi 08.00, selingan 10.00, siang 12.00, selingan 15.00, malam 19.00). Konteks: obesitas kelas I, riwayat polip endometrium — perbanyak sayuran cruciferous, ikan, chia/flaxseed, kunyit/jahe. Hindari santan berlebihan dan gula tambahan. Makanan Indonesia yang beragam, tidak monoton. Respond ONLY dengan JSON array 7 hari ini persis:
+[{"day":"Senin","meals":[{"time":"08.00","slot":"Pagi","name":"Nama menu","detail":"Bahan dan porsi","kcal":"~XXX kcal"},{"time":"10.00","slot":"Selingan","name":"...","detail":"...","kcal":"..."},{"time":"12.00","slot":"Siang","name":"...","detail":"...","kcal":"..."},{"time":"15.00","slot":"Selingan","name":"...","detail":"...","kcal":"..."},{"time":"19.00","slot":"Malam","name":"...","detail":"...","kcal":"..."}]},...]
+Respond hanya JSON, tanpa penjelasan, tanpa backtick.`;
+  try {
+    const key = getApiKey();
+    const headers = {'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
+    if(key) headers['x-api-key'] = key;
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers,body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    if(r.status===401){ state.currentMealPlan=buildFallbackPlan(phase.kcal); clearInterval(iv); loader.style.display='none'; content.style.display='block'; renderDayMeals(); return; }
+    const d=await r.json();
+    const text=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const clean=text.replace(/```json|```/g,'').trim();
+    state.currentMealPlan=JSON.parse(clean);
+  } catch(e) {
+    state.currentMealPlan=buildFallbackPlan(phase.kcal);
+  }
+  clearInterval(iv);
+  loader.style.display='none'; content.style.display='block';
+  renderDayMeals();
+}
+
+function buildFallbackPlan(kcal) {
+  // Pilih template paling dekat dengan target kalori fase
+  const keys = Object.keys(MEAL_TEMPLATES).map(Number).sort((a,b)=>a-b);
+  const best = keys.reduce((prev, curr) =>
+    Math.abs(curr - kcal) < Math.abs(prev - kcal) ? curr : prev
+  );
+  const t = MEAL_TEMPLATES[best];
+  return DAYS.map((day, di) => ({
+    day,
+    meals: t.map(slot => ({
+      time: slot.time,
+      slot: slot.slot,
+      name: slot.meals[di % 7].name,
+      detail: slot.meals[di % 7].detail,
+      kcal: slot.meals[di % 7].kcal,
+    }))
+  }));
+}
+
+function renderDayMeals() {
+  if(!state.currentMealPlan) return;
+  const plan=state.currentMealPlan[state.currentDay];
+  if(!plan) return;
+  const el=document.getElementById('meal-day-content');
+  el.innerHTML=plan.meals.map(m=>`<div class="meal-slot"><div class="meal-time-badge"><div class="meal-time-dot"></div><div class="meal-time-txt">${m.time}</div><div style="font-size:9px;color:var(--text3);">${m.slot}</div></div><div class="meal-info"><div class="meal-name">${m.name}</div><div class="meal-detail">${m.detail}</div><div class="meal-kcal">${m.kcal}</div></div></div>`).join('');
+}
+
+// ── WEIGHT ────────────────────────────────────────────────────────
+function openWeightModal() { document.getElementById('weight-modal').classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function logWeightFromModal() {
+  const w=parseFloat(document.getElementById('modal-weight-input').value);
+  const note=document.getElementById('modal-weight-note').value;
+  if(!w||w<30||w>200) return alert('Masukkan berat yang valid.');
+  const entry={date:new Date().toISOString().split('T')[0],weight:w,note};
+  state.weightLog.push(entry); state.weight=w;
+  state.weekNumber++;
+  state.currentMealPlan=null;
+  saveState(); updateHomeScreen(); drawChart(); renderWeightLog();
+  closeModal('weight-modal');
+  alert('Berat dicatat! Meal plan akan di-generate ulang untuk minggu baru.');
+}
+
+function logWeight() {
+  const w=parseFloat(document.getElementById('weight-input').value);
+  if(!w||w<30||w>200){alert('Masukkan berat yang valid.');return;}
+  const entry={date:new Date().toISOString().split('T')[0],weight:w,note:''};
+  state.weightLog.push(entry); state.weight=w; state.weekNumber++;
+  state.currentMealPlan=null;
+  document.getElementById('weight-input').value='';
+  saveState(); updateHomeScreen(); drawChart(); renderWeightLog();
+}
+
+function renderWeightLog() {
+  const el=document.getElementById('weight-log-list');
+  if(!state.weightLog.length){el.innerHTML='<div class="empty-state">Belum ada catatan.</div>';return;}
+  const sorted=[...state.weightLog].reverse();
+  el.innerHTML=sorted.map((e,i)=>{
+    const prev=sorted[i+1];
+    let deltaHtml='';
+    if(prev){const d=(e.weight-prev.weight).toFixed(1);const cls=d<0?'delta-down':d>0?'delta-up':'delta-same';const sign=d<0?'▼ ':d>0?'▲ ':'';deltaHtml=`<span class="weight-delta ${cls}">${sign}${Math.abs(d)} kg</span>`;}
+    return `<div class="weight-entry"><div><div class="weight-entry-date">${e.date}${e.note?'<br><span style="color:var(--text3);font-size:10px;">'+e.note+'</span>':''}</div></div><div style="display:flex;align-items:center;gap:8px;"><div class="weight-entry-val">${e.weight} kg</div>${deltaHtml}</div></div>`;
+  }).join('');
+}
+
+// ── CHART ─────────────────────────────────────────────────────────
+function drawChart() {
+  const canvas=document.getElementById('weightChart');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.parentElement.getBoundingClientRect();
+  canvas.width=rect.width*dpr; canvas.height=140*dpr;
+  canvas.style.width=rect.width+'px'; canvas.style.height='140px';
+  ctx.scale(dpr,dpr);
+  const W=rect.width, H=140, pad={t:10,r:10,b:30,l:36};
+  const data=state.weightLog.length?state.weightLog:[{date:'now',weight:state.weight}];
+  const weights=data.map(d=>d.weight);
+  const maxW=Math.max(...weights,state.startWeight)+2;
+  const minW=Math.min(...weights,state.targetWeight)-2;
+  const toX=i=>(pad.l+(i/(Math.max(data.length-1,1)))*(W-pad.l-pad.r));
+  const toY=w=>(pad.t+(maxW-w)/(maxW-minW)*(H-pad.t-pad.b));
+  ctx.clearRect(0,0,W,H);
+  // Target line
+  const ty=toY(state.targetWeight);
+  ctx.setLineDash([4,4]); ctx.strokeStyle='rgba(29,158,117,0.3)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(pad.l,ty); ctx.lineTo(W-pad.r,ty); ctx.stroke();
+  ctx.setLineDash([]); ctx.fillStyle='rgba(29,158,117,0.5)'; ctx.font='9px DM Sans'; ctx.fillText('Target',pad.l+2,ty-3);
+  // Grid
+  ctx.strokeStyle='rgba(0,0,0,0.05)'; ctx.lineWidth=1;
+  [0,.25,.5,.75,1].forEach(f=>{const y=pad.t+f*(H-pad.t-pad.b);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();const w=(maxW-f*(maxW-minW)).toFixed(0);ctx.fillStyle='rgba(0,0,0,0.3)';ctx.font='9px DM Sans';ctx.fillText(w,0,y+4);});
+  if(data.length<2){const x=toX(0),y=toY(data[0].weight);ctx.fillStyle=`#1D9E75`;ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();return;}
+  // Line
+  ctx.beginPath(); ctx.moveTo(toX(0),toY(data[0].weight));
+  data.forEach((_,i)=>{if(i>0)ctx.lineTo(toX(i),toY(data[i].weight));});
+  ctx.strokeStyle='#1D9E75'; ctx.lineWidth=2.5; ctx.lineJoin='round'; ctx.stroke();
+  // Fill
+  ctx.lineTo(toX(data.length-1),H-pad.b); ctx.lineTo(toX(0),H-pad.b); ctx.closePath();
+  ctx.fillStyle='rgba(29,158,117,0.08)'; ctx.fill();
+  // Dots
+  data.forEach((d,i)=>{const x=toX(i),y=toY(d.weight);ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle='white';ctx.fill();ctx.strokeStyle='#1D9E75';ctx.lineWidth=2;ctx.stroke();});
+  // Labels
+  ctx.fillStyle='rgba(0,0,0,0.4)'; ctx.font='9px DM Sans'; ctx.textAlign='center';
+  data.forEach((d,i)=>{if(i===0||i===data.length-1){const x=toX(i);ctx.fillText(d.date.slice(5),x,H-5);}});
+}
+
+// ── PHOTOS ────────────────────────────────────────────────────────
+let pendingPhotos={front:null,side:null};
+
+function handlePhoto(e,type) {
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    pendingPhotos[type]=ev.target.result;
+    const img=document.getElementById(type+'-preview');
+    const icon=document.getElementById(type+'-icon');
+    img.src=ev.target.result; img.style.display='block'; icon.style.display='none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function savePhotos() {
+  if(!pendingPhotos.front&&!pendingPhotos.side){alert('Pilih minimal satu foto dulu.');return;}
+  const entry={date:new Date().toISOString().split('T')[0],weight:state.weight,week:state.weekNumber,front:pendingPhotos.front,side:pendingPhotos.side};
+  state.photos.unshift(entry); pendingPhotos={front:null,side:null};
+  document.getElementById('front-preview').style.display='none'; document.getElementById('front-icon').style.display='flex';
+  document.getElementById('side-preview').style.display='none'; document.getElementById('side-icon').style.display='flex';
+  saveState(); renderPhotoGallery();
+  alert('Foto tersimpan!');
+}
+
+function renderPhotoGallery() {
+  const el=document.getElementById('photo-gallery');
+  if(!state.photos.length){el.innerHTML='<div class="empty-state">Belum ada foto.<br>Mulai foto minggu ini!</div>';return;}
+  el.innerHTML=state.photos.map(p=>`<div style="margin-bottom:16px;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><span style="font-size:12px;font-weight:500;color:var(--text2);">Minggu ${p.week} · ${p.date}</span><span class="tag tag-teal">${p.weight} kg</span></div><div style="display:grid;grid-template-columns:${p.front&&p.side?'1fr 1fr':'1fr'};gap:8px;">${p.front?`<div style="border-radius:12px;overflow:hidden;aspect-ratio:3/4;background:var(--surface2);position:relative;"><img src="${p.front}" style="width:100%;height:100%;object-fit:cover;"><div class="photo-overlay"><div class="photo-overlay-date">Tampak depan</div></div></div>`:''}${p.side?`<div style="border-radius:12px;overflow:hidden;aspect-ratio:3/4;background:var(--surface2);position:relative;"><img src="${p.side}" style="width:100%;height:100%;object-fit:cover;"><div class="photo-overlay"><div class="photo-overlay-date">Tampak samping</div></div></div>`:''}</div></div>`).join('<div style="height:1px;background:var(--border);margin-bottom:16px;"></div>');
+}
+
+// ── TIPS & AI ─────────────────────────────────────────────────────
+function buildTipsPhase() {
+  const p=getCurrentPhase(state.weight);
+  const el=document.getElementById('tips-phase-info');
+  if(!el) return;
+  el.innerHTML=`<div style="background:var(--teal-light);border-radius:12px;padding:14px;margin-bottom:10px;"><div style="font-size:11px;font-weight:500;color:var(--teal-dark);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">${p.label}</div><div style="font-size:20px;font-weight:700;color:var(--teal-dark);font-family:'Playfair Display',serif;">${p.kcalStr} kcal/hari</div><div style="font-size:12px;color:var(--teal-dark);margin-top:6px;opacity:.8;">${p.desc}</div></div>`;
+}
+
+function buildRoadmap() {
+  const el=document.getElementById('roadmap-display');
+  if(!el) return;
+  const cur=getCurrentPhase(state.weight);
+  el.innerHTML=PHASES.map(p=>{
+    const isCur=p.label===cur.label;
+    return `<div style="display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;background:${isCur?'var(--teal-light)':'transparent'};border:${isCur?'1px solid var(--teal)':'1px solid transparent'};"><div style="width:8px;height:8px;border-radius:50%;background:${p.color};flex-shrink:0;"></div><div style="flex:1;"><div style="font-size:12px;font-weight:${isCur?'500':'400'};color:var(--text);">${p.label} · ${p.from}→${p.to} kg</div></div><div style="font-size:11px;color:var(--text2);white-space:nowrap;">${p.kcalStr} kkal</div>${isCur?'<span style="font-size:9px;background:var(--teal);color:white;padding:2px 7px;border-radius:20px;white-space:nowrap;">Kamu</span>':''}</div>`;
+  }).join('');
+}
+
+// ── API KEY MANAGEMENT ────────────────────────────────────────────
+function getApiKey() {
+  return localStorage.getItem('anthropic_api_key') || '';
+}
+
+function openApiKeyModal() {
+  const existing = getApiKey();
+  const input = document.getElementById('apikey-input');
+  if(existing) input.value = existing;
+  document.getElementById('apikey-status').style.display='none';
+  document.getElementById('apikey-modal').classList.add('open');
+}
+
+async function saveApiKey() {
+  const key = document.getElementById('apikey-input').value.trim();
+  const statusEl = document.getElementById('apikey-status');
+  if(!key || !key.startsWith('sk-ant')) {
+    statusEl.style.display='block';
+    statusEl.style.color='#A32D2D';
+    statusEl.textContent='⚠ Format API key tidak valid. Harus diawali sk-ant-...';
+    return;
+  }
+  statusEl.style.display='block';
+  statusEl.style.color='var(--teal)';
+  statusEl.textContent='🔄 Menguji koneksi...';
+  // Test the key with a minimal request
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:10,messages:[{role:'user',content:'Hi'}]})
+    });
+    if(r.status===200||r.status===400){
+      localStorage.setItem('anthropic_api_key', key);
+      statusEl.style.color='var(--teal)';
+      statusEl.textContent='✅ Berhasil! AI Coach sekarang aktif.';
+      setTimeout(()=>{ closeModal('apikey-modal'); updateApiKeyUI(); }, 1200);
+    } else if(r.status===401) {
+      statusEl.style.color='#A32D2D';
+      statusEl.textContent='❌ API key tidak valid atau sudah expired. Cek lagi di console.anthropic.com';
+    } else {
+      statusEl.style.color='#A32D2D';
+      statusEl.textContent='⚠ Error ' + r.status + '. Coba lagi.';
+    }
+  } catch(e) {
+    // CORS / network — key format ok, save anyway
+    localStorage.setItem('anthropic_api_key', key);
+    statusEl.style.color='var(--teal)';
+    statusEl.textContent='✅ API key disimpan! AI Coach aktif.';
+    setTimeout(()=>{ closeModal('apikey-modal'); updateApiKeyUI(); }, 1200);
+  }
+}
+
+function updateApiKeyUI() {
+  const hasKey = !!getApiKey();
+  const banner = document.getElementById('apikey-banner');
+  const title = document.getElementById('apikey-banner-title');
+  const sub = document.getElementById('apikey-banner-sub');
+  const icon = document.getElementById('apikey-icon');
+  const noKey = document.getElementById('ai-coach-no-key');
+  const active = document.getElementById('ai-coach-active');
+  if(hasKey) {
+    banner.style.background='var(--teal-light)';
+    title.textContent='AI Coach Aktif ✓';
+    title.style.color='var(--teal-dark)';
+    sub.textContent='Tap untuk ganti API key';
+    sub.style.color='var(--teal)';
+    icon.textContent='🤖';
+    noKey.style.display='none';
+    active.style.display='block';
+  } else {
+    banner.style.background='var(--amber-light)';
+    title.textContent='Hubungkan AI Coach';
+    title.style.color='var(--amber)';
+    sub.textContent='Tap untuk setup API key — gratis dari Anthropic';
+    sub.style.color='var(--text2)';
+    icon.textContent='🔑';
+    noKey.style.display='block';
+    active.style.display='none';
+  }
+}
+
+async function askAI() {
+  const q = document.getElementById('ai-question').value.trim();
+  if(!q) return;
+  const key = getApiKey();
+  const ansEl = document.getElementById('ai-answer');
+  ansEl.style.display='block';
+  ansEl.innerHTML='<div class="ai-loader"><div class="ai-spinner"></div><div class="ai-loader-text">Sedang menjawab...</div></div>';
+  const p = getCurrentPhase(state.weight);
+  const prompt = `Kamu adalah coach diet dan nutrisi untuk ${state.name}, perempuan ${state.age} tahun, berat ${state.weight} kg, tinggi ${state.height} cm, BMI ${(state.weight/(state.height/100)**2).toFixed(1)}, fase ${p.label} dengan target ${p.kcalStr} kcal/hari. Riwayat: polip endometrium — diet anti-inflamasi. Jawab pertanyaan ini dengan singkat, praktis, dalam bahasa Indonesia informal (seperti teman yang ahli): "${q}". Maksimal 100 kata.`;
+  try {
+    const headers = {'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
+    if(key) headers['x-api-key'] = key;
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers,
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    if(r.status===401) {
+      ansEl.innerHTML=`<div style="background:#FCEBEB;border-radius:12px;padding:14px;font-size:13px;color:#A32D2D;">API key tidak valid. <span style="text-decoration:underline;cursor:pointer;" onclick="openApiKeyModal()">Update API key →</span></div>`;
+      return;
+    }
+    const d = await r.json();
+    const text = (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    ansEl.innerHTML=`<div style="background:var(--teal-light);border-radius:12px;padding:14px;"><div style="font-size:11px;font-weight:500;color:var(--teal-dark);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;">AI Coach</div><div class="ai-response">${text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div></div>`;
+  } catch(e) {
+    ansEl.innerHTML='<div style="background:var(--surface2);border-radius:12px;padding:14px;font-size:13px;color:var(--text2);">Tidak bisa terhubung. Cek koneksi internetmu dan coba lagi.</div>';
+  }
+}
+
+// ── STORAGE ───────────────────────────────────────────────────────
+function saveState() {
+  try { localStorage.setItem('margareth_diet_v2', JSON.stringify(state)); } catch(e){}
+}
+function loadState() {
+  try { const s=localStorage.getItem('margareth_diet_v2'); if(s) { state={...state,...JSON.parse(s)}; return true; } } catch(e){}
+  return false;
+}
+
+// ── BOOT ─────────────────────────────────────────────────────────
+window.onload=()=>{
+  if(loadState() && state.name) { initApp(); }
+};
+</script>
+</body>
+</html>
